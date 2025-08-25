@@ -1,0 +1,25 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "northamerica-south1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "database": {
+    "rules": "database.rules.json"
+  }
+}
