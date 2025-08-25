@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "305501914796",
+    "firebase_url": "https://overturescoutingsuite-default-rtdb.firebaseio.com",
+    "project_id": "overturescoutingsuite",
+    "storage_bucket": "overturescoutingsuite.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305501914796:android:dba62c6480e2bbb68c0109",
+        "android_client_info": {
+          "package_name": "com.example.new_overscauting_tierlist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtIUDgd18X3A2uEkuO-QbvOt2o2Wvyo6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

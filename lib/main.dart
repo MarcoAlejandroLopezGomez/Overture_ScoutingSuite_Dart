@@ -14,6 +14,8 @@ import 'package:flutter/services.dart'; // Add this import for LogicalKeyboardKe
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as p; // Import the path package
 import 'qr_scanner.dart'; // Agregada la importación para Qr Scanner
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // New: Global cache service for images and customers
 class ImageCacheService {
@@ -45,7 +47,11 @@ class PhotoViewResult {
 }
 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 

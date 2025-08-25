@@ -21,5 +21,26 @@
   },
   "database": {
     "rules": "database.rules.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "overturescoutingsuite",
+          "appId": "1:305501914796:android:dba62c6480e2bbb68c0109",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "overturescoutingsuite",
+          "configurations": {
+            "android": "1:305501914796:android:dba62c6480e2bbb68c0109",
+            "web": "1:305501914796:web:d829ea8e03bdc8338c0109",
+            "windows": "1:305501914796:web:a0a977170d8f42de8c0109"
+          }
+        }
+      }
+    }
   }
 }
