@@ -3,9 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
-// Correct import for PhotoViewGallery
 import 'package:photo_view/photo_view_gallery.dart';
-// Import for base PhotoView if needed elsewhere, but Gallery is key here
 import 'package:photo_view/photo_view.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart'; // Import foundation for listEquals and kIsWeb
@@ -17,7 +15,7 @@ import 'qr_scanner.dart'; // Agregada la importación para Qr Scanner
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-// New: Global cache service for images and customers
+// Global cache service for images and customers
 class ImageCacheService {
   static List<ImageData> cachedImages = [];
   static List<Customer> cachedCustomers = [];
@@ -31,7 +29,7 @@ class BoldIntent extends Intent {
   const BoldIntent();
 }
 
-// New: Class to hold results from PhotoViewPage
+//Class to hold results from PhotoViewPage
 class PhotoViewResult {
   final String? deletedSubImageId;
   // MODIFIED: Use a boolean flag instead of the list
@@ -45,7 +43,6 @@ class PhotoViewResult {
     return 'PhotoViewResult(deletedSubImageId: $deletedSubImageId, imagesAdded: $imagesAdded)';
   }
 }
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -280,114 +277,403 @@ class TierListPageState extends State<TierListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1117), // Dark GitHub-like background
       appBar: AppBar(
-        title: const Text('OVERTURE PRESENTS ROBOTOS TIER LIST'),
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6F42C1), Color(0xFF8B5CF6)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6F42C1).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Text(
+            'OVERTURE ROBOTS TIER LIST',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF161B22),
+        elevation: 0,
         actions: [
-          TextButton(
-            onPressed: () {
-              // Save current text and cache images and customer data before navigation
-              TextCacheService.cachedText = _textController.text;
-              ImageCacheService.cachedImages = images;
-              ImageCacheService.cachedCustomers = customers;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => OverScoutingApp()),
-              );
-            },
-            child: const Text(
-              'Qr Scanner',
-              style: TextStyle(color: Colors.white),
+          // Add Images Button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF238636), Color(0xFF2EA043)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF238636).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: pickImages,
+              icon: const Icon(Icons.add_photo_alternate, color: Colors.white, size: 20),
+              tooltip: "Agregar Imágenes",
+            ),
+          ),
+          // Cross-out Mode Button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: crossOutMode 
+                    ? [const Color(0xFFEF4444), const Color(0xFFF87171)]
+                    : [const Color(0xFF6B7280), const Color(0xFF9CA3AF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: (crossOutMode ? const Color(0xFFEF4444) : const Color(0xFF6B7280)).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  crossOutMode = !crossOutMode;
+                });
+              },
+              icon: Icon(Icons.clear, color: Colors.white, size: 20),
+              tooltip: crossOutMode ? "Desactivar Tachado" : "Activar Tachado",
+            ),
+          ),
+          // Save Button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: saveTierList,
+              icon: const Icon(Icons.save, color: Colors.white, size: 20),
+              tooltip: "Guardar Tier List",
+            ),
+          ),
+          // Load Button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: uploadTierList,
+              icon: const Icon(Icons.upload_file, color: Colors.white, size: 20),
+              tooltip: "Cargar Tier List",
+            ),
+          ),
+          // QR Scanner Button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF6B35), Color(0xFFFF8A65)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF6B35).withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextButton.icon(
+              onPressed: () {
+                TextCacheService.cachedText = _textController.text;
+                ImageCacheService.cachedImages = images;
+                ImageCacheService.cachedCustomers = customers;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => OverScoutingApp()),
+                );
+              },
+              icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 18),
+              label: const Text(
+                'QR Scanner',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          buildPickRows(),
-          const SizedBox(height: 20),
-          buildImageButtons(),
-          const SizedBox(height: 20),
-          Expanded(child: buildImageContainer()),
-        ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0D1117), Color(0xFF010409)],
+          ),
+        ),
+        child: Column(
+          children: [
+            // Gradient separator
+            Container(
+              height: 3,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF6F42C1), Color(0xFF8B5CF6), Color(0xFF06B6D4)],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            buildPickRows(),
+            const SizedBox(height: 20),
+            Flexible(
+              flex: 2, // Give remaining space to image container
+              child: buildImageContainer(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-// Modified buildPickRows for uniform customer header size and alignment:
+// Modified buildPickRows for improved visual design:
 Widget buildPickRows() {
-  return Container(
-    // Consider using LayoutBuilder or Flexible/Expanded for better height management
-    height: MediaQuery.of(context).size.height * 0.6, // Fixed overall row height
-    child: Column(
-      children: customers.map((customer) {
-        return Expanded(
-          child: Row(
-            children: [
-              Container(
-                width: 120,               // Fixed width so names align
-                // Consider removing fixed height or making it smaller if rows overflow
-                // height: 50,
-                alignment: Alignment.center,
-                color: customer.color,
-                padding: const EdgeInsets.symmetric(horizontal: 4.0), // Add padding
-                child: Text(
-                  customer.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+  // Define tier colors with gradients
+  final List<Map<String, dynamic>> tierStyles = [
+    {
+      'gradient': [const Color(0xFF9333EA), const Color(0xFFA855F7)], // Purple gradient for 1st Pick
+      'shadow': const Color(0xFF9333EA).withOpacity(0.3),
+      'name': '🥇 1st Pick'
+    },
+    {
+      'gradient': [const Color(0xFFF59E0B), const Color(0xFFFBBF24)], // Yellow gradient for 2nd Pick
+      'shadow': const Color(0xFFF59E0B).withOpacity(0.3),
+      'name': '🥈 2nd Pick'
+    },
+    {
+      'gradient': [const Color(0xFF10B981), const Color(0xFF34D399)], // Green gradient for 3rd Pick
+      'shadow': const Color(0xFF10B981).withOpacity(0.3),
+      'name': '🥉 3rd Pick'
+    },
+    {
+      'gradient': [const Color(0xFF3B82F6), const Color(0xFF60A5FA)], // Blue gradient for Ojito
+      'shadow': const Color(0xFF3B82F6).withOpacity(0.3),
+      'name': '👁️ Ojito'
+    },
+    {
+      'gradient': [const Color(0xFFEF4444), const Color(0xFFF87171)], // Red gradient for -
+      'shadow': const Color(0xFFEF4444).withOpacity(0.3),
+      'name': '❌ No Pick'
+    },
+    {
+      'gradient': [const Color(0xFFFF6B35), const Color(0xFFFF8A65)], // Orange gradient for Defense Pick
+      'shadow': const Color(0xFFFF6B35).withOpacity(0.3),
+      'name': '🛡️ Defense'
+    },
+  ];
+
+  return Flexible(
+    flex: 3, // Give more space to tier rows
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListView.builder(
+        itemCount: customers.length,
+        itemBuilder: (context, index) {
+          final customer = customers[index];
+          final style = tierStyles[index];
+          
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12), // Increased margin
+            height: 100, // Increased from 70 to 100
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: style['shadow'],
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Row(
+                children: [
+                  // Tier Label with gradient background
+                  Container(
+                    width: 140, // Increased width
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: style['gradient'],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Background pattern
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              backgroundBlendMode: BlendMode.overlay,
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                        ),
+                        // Text content
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                style['name'],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14, // Increased font size
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(1, 1),
+                                      blurRadius: 2,
+                                      color: Colors.black26,
+                                    ),
+                                  ],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 4), // Increased spacing
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${customer.items.length}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11, // Increased font size
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center, // Center text
-                  overflow: TextOverflow.ellipsis, // Handle long names
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: CustomerCart(
-                  customer: customer,
-                  highlighted: false, // This seems unused, consider removing
-                  crossOutMode: crossOutMode,
-                  // MODIFIED: Change callback to onImageDroppedAt
-                  onImageDroppedAt: (item, index) {
-                    if (!crossOutMode) { // Check only crossOutMode
-                      setState(() {
-                        // Remove the image from its current location
-                        bool removed = images.remove(item);
-                        if (!removed) {
-                          for (var c in customers) {
-                            if (c.items.remove(item)) {
-                               removed = true;
-                               break;
-                            }
+                  const SizedBox(width: 12), // Increased spacing
+                  // Customer Cart with improved styling
+                  Expanded(
+                    child: Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1C2128),
+                        border: Border.all(
+                          color: style['gradient'][0].withOpacity(0.3),
+                          width: 2,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: CustomerCart(
+                        customer: customer,
+                        highlighted: false,
+                        crossOutMode: crossOutMode,
+                        onImageDroppedAt: (item, index) {
+                          if (!crossOutMode) {
+                            setState(() {
+                              bool removed = images.remove(item);
+                              if (!removed) {
+                                for (var c in customers) {
+                                  if (c.items.remove(item)) {
+                                     removed = true;
+                                     break;
+                                  }
+                                }
+                              }
+                              if (removed) {
+                                 final insertIndex = index.clamp(0, customer.items.length);
+                                 print("Inserting item ${item.id} into ${customer.name} at index $insertIndex (original index: $index)");
+                                 customer.items.insert(insertIndex, item);
+                              } else {
+                                 print("Warning: Dropped item ${item.id} not found in any list.");
+                              }
+                            });
                           }
-                        }
-                        // Add to new customer at the specified index if removed
-                        if (removed) {
-                           // Clamp index to be safe
-                           final insertIndex = index.clamp(0, customer.items.length);
-                           print("Inserting item ${item.id} into ${customer.name} at index $insertIndex (original index: $index)");
-                           customer.items.insert(insertIndex, item);
-                        } else {
-                           print("Warning: Dropped item ${item.id} not found in any list.");
-                        }
-                      });
-                    }
-                  },
-                  onEditImageText: _editImageText,
-                  onDeleteImage: _deleteImage, // Pass the main delete function
-                  onViewImage: _viewImage,
-                ),
+                        },
+                        onEditImageText: _editImageText,
+                        onDeleteImage: _deleteImage,
+                        onViewImage: _viewImage,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            ),
+          );
+        },
+      ),
     ),
   );
 }
 
    Widget buildImage(ImageData imageData, {bool isInRow = false}) {
-    // Ensure imageList is initialized
     imageData.imageList ??= [imageData];
 
     return GestureDetector(
@@ -396,96 +682,204 @@ Widget buildPickRows() {
           setState(() {
             imageData.crossedOut = !imageData.crossedOut;
           });
-        // REMOVED: } else if (!editMode) { // Only allow viewing if not in edit mode
-        } else { // Allow viewing if not in crossOutMode
+        } else {
           _viewImage(imageData);
         }
       },
-      child: SizedBox(
+      child: Container(
         width: 100,
         height: 100,
-        child: Stack(
-          fit: StackFit.expand, // Make stack fill SizedBox
-          children: [
-            // Background Image
-            Image.memory(
-              imageData.bytes,
-              fit: BoxFit.cover,
-              // Add semantic label for accessibility
-              semanticLabel: imageData.title.isNotEmpty ? imageData.title : 'Tier list image',
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-            // Title Overlay (optional, consider if it obscures image too much)
-            if (imageData.title.isNotEmpty)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                  padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
-                  child: Text(
-                    imageData.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10, // Smaller font size for title overlay
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background Image with overlay for better contrast
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2128),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Image.memory(
+                  imageData.bytes,
+                  fit: BoxFit.cover,
+                  semanticLabel: imageData.title.isNotEmpty ? imageData.title : 'Tier list image',
+                ),
+              ),
+              // Gradient overlay for better text readability
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                    stops: const [0.6, 1.0],
                   ),
                 ),
               ),
-            // Cross-out Overlay
-            if (imageData.crossedOut)
-              Container(
-                 color: Colors.black.withOpacity(0.4), // Dim background slightly
-                 child: const Center(
-                   child: Icon(
-                     Icons.clear,
-                     color: Colors.red,
-                     size: 80, // Adjust size
-                   ),
-                 ),
-              ),
-            // Edit Button
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container( // Add background for better visibility
-                 color: Colors.black.withOpacity(0.5),
-                 child: IconButton(
-                   icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                   tooltip: "Edit Text/Skills",
-                   onPressed: () {
-                     _editImageText(imageData);
-                   },
-                   padding: EdgeInsets.zero, // Reduce padding
-                   constraints: const BoxConstraints(), // Reduce constraints
-                 ),
-              ),
-            ),
-            // Delete Button (for main image list only, handled differently in CustomerCart)
-            if (!isInRow) // Only show delete on main list images
+              // Title Overlay with improved styling
+              if (imageData.title.isNotEmpty)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: Text(
+                      imageData.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(1, 1),
+                            blurRadius: 2,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              // Skills indicator
+              if (imageData.driverSkills > 0)
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _getSkillColor(imageData.driverSkills),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      imageData.driverSkills.toStringAsFixed(1),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              // Cross-out Overlay with improved styling
+              if (imageData.crossedOut)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.clear,
+                      color: Colors.red,
+                      size: 60,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 2),
+                          blurRadius: 4,
+                          color: Colors.black54,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              // Edit Button with improved styling
               Positioned(
-                top: 0,
-                right: 0,
-                child: Container( // Add background for better visibility
-                   color: Colors.black.withOpacity(0.5),
-                   child: IconButton(
-                     icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                     tooltip: "Delete Image",
-                     onPressed: () {
-                       _deleteImage(imageData); // Call main delete function
-                     },
-                     padding: EdgeInsets.zero, // Reduce padding
-                     constraints: const BoxConstraints(), // Reduce constraints
-                   ),
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () => _editImageText(imageData),
+                    borderRadius: BorderRadius.circular(8),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-          ],
+              // Delete Button (for main image list only)
+              if (!isInRow)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: InkWell(
+                      onTap: () => _deleteImage(imageData),
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Color _getSkillColor(double skill) {
+    if (skill >= 8.0) return const Color(0xFF10B981); // Green for high skill
+    if (skill >= 6.0) return const Color(0xFFF59E0B); // Yellow for medium skill
+    if (skill >= 4.0) return const Color(0xFFFF6B35); // Orange for low-medium skill
+    return const Color(0xFFEF4444); // Red for low skill
   }
 
   Widget buildDraggableImage(ImageData imageData, {bool isInRow = false}) {
@@ -525,67 +919,147 @@ Widget buildPickRows() {
     }
   }
 
-  Widget buildImageButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Better spacing
-      children: [
-        IconButton(
-          icon: const Icon(Icons.add_photo_alternate),
-          iconSize: 40, // Slightly smaller icons
-          tooltip: "Add Images",
-          onPressed: pickImages,
-        ),
-        IconButton(
-          icon: Icon(Icons.clear, color: crossOutMode ? Colors.red : Colors.white),
-          iconSize: 40,
-          tooltip: crossOutMode ? "Disable Cross-out Mode" : "Enable Cross-out Mode",
-          onPressed: () {
-            setState(() {
-              crossOutMode = !crossOutMode;
-              // REMOVED: if (crossOutMode) editMode = false; // Turn off edit mode if cross-out is enabled
-            });
-          },
-        ),
-         // REMOVED: IconButton for Edit Mode Toggle
-        IconButton(
-          icon: const Icon(Icons.save),
-          iconSize: 40,
-          tooltip: "Save Tier List",
-          onPressed: saveTierList,
-        ),
-        IconButton(
-          icon: const Icon(Icons.upload_file),
-          iconSize: 40,
-          tooltip: "Load Tier List",
-          onPressed: uploadTierList,
-        ),
-      ],
-    );
-  }
-
   Widget buildImageContainer() {
-    // Use LayoutBuilder to determine crossAxisCount dynamically or ensure enough space
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate crossAxisCount based on width, ensuring minimum size
-        int crossAxisCount = (constraints.maxWidth / 110).floor(); // Approx 100 width + spacing
-        if (crossAxisCount < 1) crossAxisCount = 1; // Ensure at least 1 column
-
-        return GridView.builder(
-          padding: const EdgeInsets.all(8.0), // Add padding around the grid
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 8, // Increased spacing
-            mainAxisSpacing: 8,  // Increased spacing
-            childAspectRatio: 1.0, // Ensure items are square
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161B22),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF30363D),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          itemCount: images.length,
-          itemBuilder: (context, index) {
-            // Pass isInRow: false for images in the main container
-            return buildDraggableImage(images[index], isInRow: false);
-          },
-        );
-      }
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header for unassigned images
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.inventory_2,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Robots Sin Clasificar',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${images.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Grid content
+          Expanded(
+            child: images.isEmpty
+                ? Container(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 64,
+                            color: Color(0xFF6B7280),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No hay robots sin clasificar',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Agrega imágenes para comenzar',
+                            style: TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      int crossAxisCount = (constraints.maxWidth / 110).floor();
+                      if (crossAxisCount < 1) crossAxisCount = 1;
+
+                      return Container(
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          ),
+                        ),
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(16.0),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 1.0,
+                          ),
+                          itemCount: images.length,
+                          itemBuilder: (context, index) {
+                            return buildDraggableImage(images[index], isInRow: false);
+                          },
+                        ),
+                      );
+                    }
+                ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -690,7 +1164,7 @@ Widget buildPickRows() {
         final bytes = utf8.encode(buffer.toString());
         final blob = html.Blob([bytes], 'text/plain;charset=utf-8');
         final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
+        html.AnchorElement(href: url)
           ..setAttribute("download", "tier_list.txt")
           ..click();
         html.Url.revokeObjectUrl(url);
@@ -742,7 +1216,6 @@ Widget buildPickRows() {
   void parseTierList(String content) {
     final lines = content.split('\n');
     Customer? currentCustomer;
-    ImageData? currentImage;
     // Clear existing state before parsing
     List<ImageData> newUnassignedImages = [];
     Map<String, List<ImageData>> newCustomerItems = { for (var c in customers) c.name : [] };
@@ -757,7 +1230,6 @@ Widget buildPickRows() {
         if (tierName == 'Unassigned') {
            currentCustomer = null; // Signal to add to unassigned list
         }
-        currentImage = null;
       } else if (line.startsWith('Image: ')) {
         final imageBase64 = line.substring(7).trim();
         if (imageBase64.isEmpty) { /* Skip empty image data */ i+=4; continue; } // Assume 4 lines: Image, Title, Text, DriverSkills, ImageList start
@@ -806,7 +1278,6 @@ Widget buildPickRows() {
         } else {
           newUnassignedImages.add(imageData); // Add to temporary unassigned list
         }
-        currentImage = imageData;
         i += linesConsumed; // Skip processed lines
       }
     }
@@ -902,10 +1373,10 @@ class CustomerCart extends StatefulWidget {
 class _CustomerCartState extends State<CustomerCart> {
   final ScrollController _scrollController = ScrollController();
   // Define approximate item width including padding
-  static const double itemWidth = 100.0;
-  static const double itemPaddingHorizontal = 4.0;
-  static const double itemWidthWithPadding = itemWidth + (itemPaddingHorizontal * 2); // 100 width + 4 padding on each side
-  static const double indicatorWidth = 10.0; // Width of the drop indicator
+  static const double itemWidth = 90.0; // Increased from 80
+  static const double itemPaddingHorizontal = 4.0; // Increased from 3
+  static const double itemWidthWithPadding = itemWidth + (itemPaddingHorizontal * 2);
+  static const double indicatorWidth = 10.0; // Increased from 8
 
   // State variable to track highlight index
   int? _dropIndexHighlight;
@@ -1039,66 +1510,250 @@ controller: _scrollController,
 
   // Local representation of an item within the cart
   Widget buildCartItem(ImageData imageData, BuildContext context, int index) {
-     imageData.imageList ??= [imageData]; // Ensure list is initialized
+     imageData.imageList ??= [imageData];
 
      Widget imageWidget = GestureDetector(
        onTap: () {
          if (widget.crossOutMode) {
-           // Need setState in parent (TierListPageState) to update UI
-           // This structure makes direct state update difficult.
-           // Consider calling a callback like widget.onToggleCrossout(imageData);
-           // For now, just update local state visually, parent handles actual data on view/save
-           setState(() { // This setState only affects CustomerCart visually
+           setState(() {
               imageData.crossedOut = !imageData.crossedOut;
            });
-           // TODO: Consider calling a callback to TierListPageState to update the actual data immediately
-           // widget.onToggleCrossout(imageData); // Example callback
-         // REMOVED: } else if (!widget.editMode) {
-         } else { // Allow viewing if not in crossOutMode
-           widget.onViewImage(imageData); // Use the view callback
+         } else {
+           widget.onViewImage(imageData);
          }
        },
-       child: SizedBox(
-         width: itemWidth, // Use constant
-         height: 100, // Ensure height is constrained
-         child: Stack(
-           // ... existing Stack children ...
-           fit: StackFit.expand,
-           children: [
-             Image.memory(imageData.bytes, fit: BoxFit.cover),
-             if (imageData.title.isNotEmpty) // Title Overlay
-                Positioned( top: 0, left: 0, right: 0, child: Container( color: Colors.black.withOpacity(0.5), padding: const EdgeInsets.all(2), child: Text( imageData.title, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, ), ), ),
-             if (imageData.crossedOut) // Cross-out Overlay
-                Container( color: Colors.black.withOpacity(0.4), child: const Center( child: Icon( Icons.clear, color: Colors.red, size: 80, ), ), ),
-             // Edit Button
-             Positioned( bottom: 0, right: 0, child: Container( color: Colors.black.withOpacity(0.5), child: IconButton( icon: const Icon(Icons.edit, color: Colors.white, size: 20), tooltip: "Edit Text/Skills", onPressed: () => widget.onEditImageText(imageData), padding: EdgeInsets.zero, constraints: const BoxConstraints(), ), ), ),
-             // Delete Button (Specific to cart)
-             Positioned( top: 0, right: 0, child: Container( color: Colors.black.withOpacity(0.5), child: IconButton( icon: const Icon(Icons.delete, color: Colors.orange, size: 20),
-               tooltip: "Remove from Tier", onPressed: () { widget.onDeleteImage(imageData); }, padding: EdgeInsets.zero, constraints: const BoxConstraints(), ), ), ),
+       child: Container(
+         width: itemWidth,
+         height: 90, // Increased from 70 to match better proportions
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(10),
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withOpacity(0.2),
+               blurRadius: 6,
+               offset: const Offset(0, 3),
+             ),
            ],
+         ),
+         child: ClipRRect(
+           borderRadius: BorderRadius.circular(10),
+           child: Stack(
+             fit: StackFit.expand,
+             children: [
+               Container(
+                 color: const Color(0xFF1C2128),
+                 child: Image.memory(imageData.bytes, fit: BoxFit.cover),
+               ),
+               // Gradient overlay
+               Container(
+                 decoration: BoxDecoration(
+                   gradient: LinearGradient(
+                     begin: Alignment.topCenter,
+                     end: Alignment.bottomCenter,
+                     colors: [
+                       Colors.transparent,
+                       Colors.black.withOpacity(0.6),
+                     ],
+                     stops: const [0.6, 1.0],
+                   ),
+                 ),
+               ),
+               // Title Overlay
+               if (imageData.title.isNotEmpty)
+                 Positioned(
+                   bottom: 0,
+                   left: 0,
+                   right: 0,
+                   child: Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                     child: Text(
+                       imageData.title,
+                       style: const TextStyle(
+                         color: Colors.white,
+                         fontSize: 9,
+                         fontWeight: FontWeight.bold,
+                         shadows: [
+                           Shadow(
+                             offset: Offset(1, 1),
+                             blurRadius: 2,
+                             color: Colors.black54,
+                           ),
+                         ],
+                       ),
+                       textAlign: TextAlign.center,
+                       overflow: TextOverflow.ellipsis,
+                     ),
+                   ),
+                 ),
+               // Skills indicator
+               if (imageData.driverSkills > 0)
+                 Positioned(
+                   top: 3,
+                   left: 3,
+                   child: Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                     decoration: BoxDecoration(
+                       color: _getSkillColor(imageData.driverSkills),
+                       borderRadius: BorderRadius.circular(6),
+                       boxShadow: [
+                         BoxShadow(
+                           color: Colors.black.withOpacity(0.3),
+                           blurRadius: 2,
+                           offset: const Offset(0, 1),
+                         ),
+                       ],
+                     ),
+                     child: Text(
+                       imageData.driverSkills.toStringAsFixed(1),
+                       style: const TextStyle(
+                         color: Colors.white,
+                         fontSize: 7,
+                         fontWeight: FontWeight.bold,
+                       ),
+                     ),
+                   ),
+                 ),
+               // Cross-out Overlay
+               if (imageData.crossedOut)
+                 Container(
+                   decoration: BoxDecoration(
+                     color: Colors.black.withOpacity(0.6),
+                     borderRadius: BorderRadius.circular(10),
+                   ),
+                   child: const Center(
+                     child: Icon(
+                       Icons.clear,
+                       color: Colors.red,
+                       size: 50,
+                       shadows: [
+                         Shadow(
+                           offset: Offset(1, 1),
+                           blurRadius: 3,
+                           color: Colors.black54,
+                         ),
+                       ],
+                     ),
+                   ),
+                 ),
+               // Edit Button
+               Positioned(
+                 bottom: 3,
+                 right: 3,
+                 child: Container(
+                   decoration: BoxDecoration(
+                     color: Colors.blue.withOpacity(0.9),
+                     borderRadius: BorderRadius.circular(6),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.black.withOpacity(0.3),
+                         blurRadius: 3,
+                         offset: const Offset(0, 1),
+                       ),
+                     ],
+                   ),
+                   child: InkWell(
+                     onTap: () => widget.onEditImageText(imageData),
+                     borderRadius: BorderRadius.circular(6),
+                     child: const Padding(
+                       padding: EdgeInsets.all(3),
+                       child: Icon(
+                         Icons.edit,
+                         color: Colors.white,
+                         size: 14,
+                       ),
+                     ),
+                   ),
+                 ),
+               ),
+               // Delete Button (Remove from tier)
+               Positioned(
+                 top: 3,
+                 right: 3,
+                 child: Container(
+                   decoration: BoxDecoration(
+                     color: Colors.orange.withOpacity(0.9),
+                     borderRadius: BorderRadius.circular(6),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.black.withOpacity(0.3),
+                         blurRadius: 3,
+                         offset: const Offset(0, 1),
+                       ),
+                     ],
+                   ),
+                   child: InkWell(
+                     onTap: () => widget.onDeleteImage(imageData),
+                     borderRadius: BorderRadius.circular(6),
+                     child: const Padding(
+                       padding: EdgeInsets.all(3),
+                       child: Icon(
+                         Icons.remove_circle,
+                         color: Colors.white,
+                         size: 14,
+                       ),
+                     ),
+                   ),
+                 ),
+               ),
+             ],
+           ),
          ),
        ),
      );
 
-     // Only allow dragging if not in crossOut mode
-     // REMOVED: if (widget.crossOutMode || widget.editMode) {
      if (widget.crossOutMode) {
-       return Padding( // Add padding around non-draggable items
-          padding: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal), // Use constant
+       return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal),
           child: imageWidget,
        );
      } else {
-       return Padding( // Add padding around draggable items
-         padding: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal), // Use constant
+       return Padding(
+         padding: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal),
          child: Draggable<ImageData>(
            data: imageData,
-           feedback: Material( color: Colors.transparent, child: SizedBox( width: itemWidth, height: 100, child: Opacity( opacity: 0.7, child: imageWidget, ), ), ),
-           childWhenDragging: Container( width: itemWidth, height: 100, margin: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal), color: Colors.grey.withOpacity(0.3), ),
+           feedback: Material(
+             color: Colors.transparent,
+             child: SizedBox(
+               width: itemWidth,
+               height: 90, // Match the increased height
+               child: Opacity(
+                 opacity: 0.8,
+                 child: imageWidget,
+               ),
+             ),
+           ),
+           childWhenDragging: Container(
+             width: itemWidth,
+             height: 90, // Match the increased height
+             margin: const EdgeInsets.symmetric(horizontal: itemPaddingHorizontal),
+             decoration: BoxDecoration(
+               color: Colors.grey.withOpacity(0.3),
+               borderRadius: BorderRadius.circular(10),
+               border: Border.all(
+                 color: Colors.grey.withOpacity(0.5),
+                 width: 2,
+                 style: BorderStyle.solid,
+               ),
+             ),
+             child: const Center(
+               child: Icon(
+                 Icons.drag_indicator,
+                 color: Colors.grey,
+                 size: 30, // Increased icon size
+               ),
+             ),
+           ),
            child: imageWidget,
-           // ... existing drag callbacks ...
          ),
        );
      }
+  }
+
+  Color _getSkillColor(double skill) {
+    if (skill >= 8.0) return const Color(0xFF10B981);
+    if (skill >= 6.0) return const Color(0xFFF59E0B);
+    if (skill >= 4.0) return const Color(0xFFFF6B35);
+    return const Color(0xFFEF4444);
   }
 }
 
@@ -1406,29 +2061,6 @@ class _TextEditorPageState extends State<TextEditorPage> {
     super.dispose();
   }
 
-  // Helper method for RichText styling
-  TextSpan _buildStyledText(String text) {
-    final List<TextSpan> spans = [];
-    final pattern = RegExp(r'(\*\*)([^*]+?)\1'); // Non-greedy match inside **
-    int lastIndex = 0;
-
-    for (final Match match in pattern.allMatches(text)) {
-      if (match.start > lastIndex) {
-        spans.add(TextSpan(text: text.substring(lastIndex, match.start)));
-      }
-      // Add bold text without the markers
-      spans.add(TextSpan(text: match.group(2), style: const TextStyle(fontWeight: FontWeight.bold)));
-      lastIndex = match.end;
-    }
-
-    if (lastIndex < text.length) {
-      spans.add(TextSpan(text: text.substring(lastIndex)));
-    }
-
-    // Base style for the entire RichText
-    return TextSpan(style: const TextStyle(color: Colors.white, fontSize: 16), children: spans);
-  }
-
   // Toggles bold markdown around selection or at cursor position
   void _toggleBold() {
     final String currentText = _textController.text;
@@ -1462,7 +2094,7 @@ class _TextEditorPageState extends State<TextEditorPage> {
     }
      // Manually update image text as controller listener might lag
      widget.image.text = _textController.text;
-     setState(() {}); // Trigger rebuild for RichText
+     setState(() {}); // Trigger rebuild
   }
 
   @override
@@ -1478,131 +2110,256 @@ class _TextEditorPageState extends State<TextEditorPage> {
           ),
         },
         child: Focus(
-          autofocus: true, // Focus the main content area
-          child: WillPopScope( // Use WillPopScope for saving on back button
+          autofocus: true,
+          child: WillPopScope(
             onWillPop: () async {
               // Final save before popping
               widget.image.title = _titleController.text;
               widget.image.text = _textController.text;
-              // Driver skills are updated via listener
               print("Popping TextEditorPage, saved data.");
-              return true; // Allow pop
+              return true;
             },
             child: Scaffold(
+              backgroundColor: const Color(0xFF1A1A1A), // Dark background
               appBar: AppBar(
+                backgroundColor: const Color(0xFF2D2D2D),
+                elevation: 4,
                 title: Row(
                   children: [
-                    Expanded( // Allow title to take space
+                    Expanded(
                        child: Text(
                           'Edit: ${widget.image.title.isNotEmpty ? widget.image.title : widget.image.src}',
                           overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                        )
                     ),
-                    const Text(' Skills:'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                      ),
+                      child: const Text(
+                        'Skills:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    SizedBox(
-                      width: 60, // Keep fixed width for skills input
+                    Container(
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A3A3A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
                       child: TextField(
                         controller: _driverSkillsController,
-                        textAlign: TextAlign.center, // Center skills value
+                        textAlign: TextAlign.center,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        // Allow digits, one decimal point
                         inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}\.?\d{0,1}')), ],
                         decoration: const InputDecoration(
                           hintText: '0-10',
-                          isDense: true, // Reduce padding
-                          contentPadding: EdgeInsets.symmetric(vertical: 8.0), // Adjust vertical padding
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+                          border: InputBorder.none,
                         ),
-                        style: const TextStyle(fontSize: 14), // Adjust font size
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 actions: [
-                  IconButton( // Add Bold toggle button
-                     icon: const Icon(Icons.format_bold),
-                     tooltip: "Toggle Bold (Ctrl+B)",
-                     onPressed: _toggleBold,
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    ),
+                    child: IconButton(
+                       icon: const Icon(Icons.format_bold, color: Colors.orange),
+                       tooltip: "Toggle Bold (Ctrl+B)",
+                       onPressed: _toggleBold,
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.photo),
-                    tooltip: "View Image(s)",
-                    // MODIFIED: Make onPressed async and handle potential result
-                    onPressed: () async {
-                      widget.image.imageList ??= [widget.image];
-                      // Await result from PhotoViewPage
-                      final result = await Navigator.push<PhotoViewResult?>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PhotoViewPage(
-                            image: widget.image,
-                            imageList: widget.image.imageList!,
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.photo, color: Colors.green),
+                      tooltip: "View Image(s)",
+                      onPressed: () async {
+                        widget.image.imageList ??= [widget.image];
+                        final result = await Navigator.push<PhotoViewResult?>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PhotoViewPage(
+                              image: widget.image,
+                              imageList: widget.image.imageList!,
+                            ),
                           ),
-                        ),
-                      );
-                      // Refresh TextEditorPage state if PhotoViewPage indicated changes
-                      if (result != null && (result.imagesAdded || result.deletedSubImageId != null) && mounted) {
-                         print("Returned to TextEditorPage from PhotoViewPage with result: $result. Refreshing state.");
-                         setState(() {});
-                      }
-                    },
+                        );
+                        if (result != null && (result.imagesAdded || result.deletedSubImageId != null) && mounted) {
+                           print("Returned to TextEditorPage from PhotoViewPage with result: $result. Refreshing state.");
+                           setState(() {});
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title', // Use labelText
-                        hintText: 'Enter title here...',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded( // Allow text area to take remaining space
-                      child: Stack(
-                        children: [
-                          // Background RichText for styling
-                          Container( // Add border matching TextField
-                             decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(4.0),
-                             ),
-                             width: double.infinity, // Ensure it fills width
-                             child: SingleChildScrollView( // Allow scrolling for styled text too
-                               controller: _textScrollController, // Link scroll controllers
-                               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0), // Match TextField padding
-                               child: RichText(
-                                 text: _buildStyledText(_textController.text),
-                               ),
-                             ),
-                          ),
-                          // Foreground TextField for editing (transparent text)
-                          TextField(
-                            controller: _textController,
-                            scrollController: _textScrollController, // Use the same controller
-                            maxLines: null, // Allow multiple lines
-                            expands: true, // Expand to fill Expanded widget
-                            keyboardType: TextInputType.multiline,
-                            style: const TextStyle(
-                              color: Colors.transparent, // Hide the actual text
-                              fontSize: 16, // Match RichText font size
+              body: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1A1A1A), Color(0xFF0F0F0F)],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      // Title Field with improved styling
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
-                            cursorColor: Colors.white, // Make cursor visible
-                            decoration: const InputDecoration(
-                              hintText: 'Enter text... use **bold** or Ctrl+B',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0), // Match RichText padding
-                            ),
-                            // onChanged handled by listener now
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _titleController,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
+                          decoration: InputDecoration(
+                            labelText: 'Título del Robot',
+                            labelStyle: TextStyle(
+                              color: Colors.blue.withOpacity(0.8),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            hintText: 'Ingresa el nombre del robot...',
+                            hintStyle: TextStyle(color: Colors.grey.withOpacity(0.6)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            fillColor: const Color(0xFF2D2D2D),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            prefixIcon: Icon(
+                              Icons.smart_toy,
+                              color: Colors.blue.withOpacity(0.7),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      // Improved Text Editor
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              color: const Color(0xFF2D2D2D),
+                              child: TextField(
+                                controller: _textController,
+                                scrollController: _textScrollController,
+                                maxLines: null,
+                                expands: true,
+                                keyboardType: TextInputType.multiline,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  height: 1.5, // Better line spacing
+                                  fontFamily: 'monospace', // Fixed-width font for better alignment
+                                ),
+                                cursorColor: Colors.purple,
+                                cursorWidth: 2,
+                                decoration: InputDecoration(
+                                  hintText: 'Describe las habilidades del robot...\n\nUsa **texto** para negrita o Ctrl+B\n\nEjemplos:\n- **Velocidad**: Muy rápido\n- **Defensa**: Excelente\n- **Puntuación**: Alta precisión',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.withOpacity(0.6),
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.all(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Helper text at bottom
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.purple.withOpacity(0.7),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'Tip: Usa **texto** para negrita o presiona Ctrl+B',
+                                style: TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
